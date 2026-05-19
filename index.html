@@ -645,20 +645,30 @@ function getAudioPath(id) {
 }
 
 function playAudio() {
+  stopAllAudio();
   if (audioMode === 'webspeech') {
     playWebSpeech();
     return;
   }
-  const path = getAudioPath(currentQuestion.id);
-  audioElement = new Audio(path);
-  audioElement.onerror = () => {
-    console.warn('MP3 not found, fallback to Web Speech');
-    playWebSpeech();
-  };
   showStage(stagePlaying);
-  audioElement.play().then(() => {
-    audioElement.onended = () => startCountdown();
-  }).catch(() => playWebSpeech());
+  const num = String(currentQuestion.id).padStart(2,'0');
+  if (!AUDIO_BASE64 || !AUDIO_BASE64[num]) {
+    playWebSpeech();
+    return;
+  }
+  // Build Blob URL instead of data: URI — data: URIs are blocked by iOS Safari for <audio>
+  try {
+    const raw = atob(AUDIO_BASE64[num]);
+    const bytes = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+    const blobUrl = URL.createObjectURL(new Blob([bytes], { type: 'audio/mp3' }));
+    audioElement = new Audio(blobUrl);
+    audioElement.onerror = () => { URL.revokeObjectURL(blobUrl); playWebSpeech(); };
+    audioElement.onended = () => { URL.revokeObjectURL(blobUrl); startCountdown(); };
+    audioElement.play().catch(() => { URL.revokeObjectURL(blobUrl); playWebSpeech(); });
+  } catch (e) {
+    playWebSpeech();
+  }
 }
 
 function playWebSpeech() {
