@@ -1,0 +1,158 @@
+[
+  {
+    "letter": "A",
+    "word": "adventure",
+    "sentence": "I read a book about a big adventure in the forest.",
+    "cn_sentence": "我读了一本关于森林大冒险的书。"
+  },
+  {
+    "letter": "B",
+    "word": "butterfly",
+    "sentence": "A pretty butterfly lands on the red flower in my garden.",
+    "cn_sentence": "一只漂亮的蝴蝶落在我花园里的红花上。"
+  },
+  {
+    "letter": "C",
+    "word": "clever",
+    "sentence": "My dog is very clever and can open the door by himself.",
+    "cn_sentence": "我的狗非常聪明，能自己开门。"
+  },
+  {
+    "letter": "D",
+    "word": "desert",
+    "sentence": "It is very hot in the desert and there is no water at all.",
+    "cn_sentence": "沙漠里非常炎热，一点水都没有。"
+  },
+  {
+    "letter": "E",
+    "word": "energy",
+    "sentence": "I have lots of energy after I eat a good breakfast in the morning.",
+    "cn_sentence": "早上吃完丰盛早餐后我精力充沛。"
+  },
+  {
+    "letter": "F",
+    "word": "favorite",
+    "sentence": "My favorite food is pizza with lots of cheese on top.",
+    "cn_sentence": "我最喜欢的食物是上面有很多芝士的披萨。"
+  },
+  {
+    "letter": "G",
+    "word": "garden",
+    "sentence": "My grandma grows carrots and tomatoes in her garden at home.",
+    "cn_sentence": "我奶奶在家里的花园种植胡萝卜和番茄。"
+  },
+  {
+    "letter": "H",
+    "word": "helmet",
+    "sentence": "I wear a helmet when I ride my bike to the park near my house.",
+    "cn_sentence": "我骑自行车去家附近的公园时戴头盔。"
+  },
+  {
+    "letter": "I",
+    "word": "important",
+    "sentence": "It is very important to drink enough water every day, especially when you play sports outside.",
+    "cn_sentence": "每天喝足够的水非常重要，尤其是在户外运动的时候。"
+  },
+  {
+    "letter": "J",
+    "word": "journey",
+    "sentence": "We go on a long journey to visit my grandma in the city.",
+    "cn_sentence": "我们长途旅行去城里看望奶奶。"
+  },
+  {
+    "letter": "K",
+    "word": "kitchen",
+    "sentence": "My mom cooks delicious food in the kitchen every evening.",
+    "cn_sentence": "妈妈每天晚上在厨房做美味的食物"
+  },
+  {
+    "letter": "L",
+    "word": "lantern",
+    "sentence": "We light a red lantern in the garden for the festival.",
+    "cn_sentence": "我们在花园里为节日点亮一盏红灯笼。"
+  },
+  {
+    "letter": "M",
+    "word": "memory",
+    "sentence": "I have a happy memory of building a snowman with my dad.",
+    "cn_sentence": "我有一个和爸爸一起堆雪人的快乐回忆。"
+  },
+  {
+    "letter": "N",
+    "word": "night",
+    "sentence": "I like to read a storybook for fifteen minutes every night before I fall asleep.",
+    "cn_sentence": "I see the blue ocean from my window when we go on vacation."
+  },
+  {
+    "letter": "O",
+    "word": "ocean",
+    "sentence": "I see the blue ocean from my window when we go on vacation.",
+    "cn_sentence": "我们去度假时从窗户看到蓝色的大海。"
+  },
+  {
+    "letter": "P",
+    "word": "protect",
+    "sentence": "I protect my little brother when we cross the busy street.",
+    "cn_sentence": "穿过繁忙马路的时候我保护弟弟。"
+  },
+  {
+    "letter": "Q",
+    "word": "quiet",
+    "sentence": "The library is quiet so everyone can read their books.",
+    "cn_sentence": "图书馆很安静，这样每个人都能看书。"
+  },
+  {
+    "letter": "R",
+    "word": "remember",
+    "sentence": "I remember to bring my homework to school every morning.",
+    "cn_sentence": "我每天早上记得带作业去学校。"
+  },
+  {
+    "letter": "S",
+    "word": "sing",
+    "sentence": "I like to sing. I do it with my family.",
+    "cn_sentence": "我喜欢唱歌，我和家人一起唱。"
+  },
+  {
+    "letter": "T",
+    "word": "tomorrow",
+    "sentence": "Tomorrow is my best friend's birthday,so I  need to buy a nice gift for her after school.",
+    "cn_sentence": "明天是我好朋友的生日，所以我放学后要去给她买一份很棒的礼物。"
+  },
+  {
+    "letter": "U",
+    "word": "umbrella",
+    "sentence": "I take my umbrella to school when the sky looks gray.",
+    "cn_sentence": "天空灰蒙蒙的时候我带雨伞去学校。"
+  },
+  {
+    "letter": "V",
+    "word": "visit",
+    "sentence": "Welcome to visit my city,Xiangyang,and enjoy the delicious beef noodles.",
+    "cn_sentence": "欢迎到我的城市，襄阳，参观并品尝美味的牛肉面。"
+  },
+  {
+    "letter": "W",
+    "word": "wonder",
+    "sentence": "I wonder why the sky is blue and the grass is green.",
+    "cn_sentence": "我好奇天为什么是蓝的，草为什么是绿的。"
+  },
+  {
+    "letter": "X",
+    "word": "relax",
+    "sentence": "Listening music can help us relax after a long day of study.",
+    "cn_sentence": "听音乐能帮助我们在漫长的学习日后放松。"
+  },
+  {
+    "letter": "Y",
+    "word": "young",
+    "sentence": "My young brother likes to play with toy cars every day.",
+    "cn_sentence": "我弟弟每天都喜欢玩玩具汽车。"
+  },
+  {
+    "letter": "Z",
+    "word": "zoo",
+    "sentence": "We plan to visit the zoo with my family this weekend.",
+    "cn_sentence": "我们计划这周末和家人一起去动物园。"
+  }
+]
