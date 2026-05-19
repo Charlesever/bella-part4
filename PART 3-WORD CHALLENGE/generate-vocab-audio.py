@@ -51,8 +51,7 @@ def extract_items(path):
     return items
 
 def generate_audio(items):
-    """Generate one MP3 per item using edge-tts --file with SSML break tags."""
-    import tempfile
+    """Generate one MP3 per item using edge-tts plain text."""
     os.makedirs(OUT_DIR, exist_ok=True)
     for item in items:
         fpath = os.path.join(OUT_DIR, f"Q{item['letter']}.mp3")
@@ -60,24 +59,16 @@ def generate_audio(items):
             print(f"[{item['letter']}] SKIP (already exists)")
             continue
 
-        ssml = (
-            '<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">\n'
-            f'  {item["letter"]}.<break time="400ms"/>{item["word"]}.<break time="300ms"/>{item["sentence"]}\n'
-            '</speak>'
-        )
+        text = f"{item['letter']}. {item['word']}. {item['sentence']}"
 
-        print(f"[{item['letter']}] {item['letter']}. {item['word']}. {item['sentence'][:60]}...", end=" ", flush=True)
+        print(f"[{item['letter']}] {text[:80]}...", end=" ", flush=True)
         try:
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.xml', delete=False, encoding='utf-8') as tf:
-                tf.write(ssml)
-                tmpname = tf.name
             subprocess.run([
                 "edge-tts",
                 "--voice", VOICE,
-                "--file", tmpname,
+                "--text", text,
                 "--write-media", fpath
             ], check=True, capture_output=True, timeout=60)
-            os.unlink(tmpname)
             print("OK")
         except subprocess.CalledProcessError as e:
             msg = e.stderr.decode()[:120] if e.stderr else str(e)
