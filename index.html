@@ -53,12 +53,12 @@
   }
   .btn:active { transform:scale(.95); }
   .btn-primary { background:var(--blue); color:white; box-shadow:0 4px 15px rgba(66,133,244,.4); }
-  .btn-primary:hover { background:#3367d6; }
+  @media (hover: hover) { .btn-primary:hover { background:#3367d6; } }
   .btn-play {
     background:var(--green); color:white; box-shadow:0 4px 15px rgba(52,168,83,.4);
     width:80px; height:80px; border-radius:50%; font-size:2em; padding:0;
   }
-  .btn-play:hover { background:#2d9249; }
+  @media (hover: hover) { .btn-play:hover { background:#2d9249; } }
   .btn-play.playing { animation:pulse 1s infinite; }
   @keyframes pulse {
     0%,100% { box-shadow:0 4px 15px rgba(52,168,83,.4); }
@@ -148,7 +148,7 @@
     padding:16px 8px; border:2px solid #e2e8f0; border-radius:var(--radius);
     background:white; cursor:pointer; transition:all .2s; font-family:inherit;
   }
-  .btn-score:hover { border-color:var(--blue); transform:translateY(-2px); box-shadow:var(--shadow); }
+  @media (hover: hover) { .btn-score:hover { border-color:var(--blue); transform:translateY(-2px); box-shadow:var(--shadow); } }
   .btn-score:active { transform:scale(.95); }
   .btn-score .score-emoji { font-size:2em; }
   .btn-score .score-label { font-weight:700; font-size:.9em; }
