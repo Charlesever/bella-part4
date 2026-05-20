@@ -752,8 +752,12 @@ function ensureSlotClickLoaded() {
   if (slotClickReady && slotClickBuffer) return Promise.resolve(slotClickBuffer);
   if (slotClickBufferPromise) return slotClickBufferPromise;
   setSlotSoundStatus('加载中…');
-  slotClickBufferPromise = fetch('assets/slot-click.mp3', { cache: 'force-cache' })
-    .then(r => r.arrayBuffer())
+  const url = 'assets/slot-click.mp3?v=1';
+  slotClickBufferPromise = fetch(url, { cache: 'force-cache' })
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.arrayBuffer();
+    })
     .then(buf => decodeAudioQueued(buf))
     .then(buffer => {
       if (buffer) {
@@ -761,12 +765,13 @@ function ensureSlotClickLoaded() {
         slotClickReady = true;
         setSlotSoundStatus('已就绪');
       } else {
-        setSlotSoundStatus('加载失败');
+        setSlotSoundStatus('解码失败');
       }
       return buffer;
     })
-    .catch(() => {
+    .catch((e) => {
       setSlotSoundStatus('加载失败');
+      try { console.warn('[slot-sound] load failed:', url, e && (e.message || e)); } catch(_) {}
       return null;
     });
   return slotClickBufferPromise;
