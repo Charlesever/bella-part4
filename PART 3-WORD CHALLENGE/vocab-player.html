@@ -147,9 +147,13 @@ let queue = [];           // shuffled indices (0-25)
 let currentIdx = -1;      // position within queue
 let isPlaying = false;
 let paused = false;
-let audioElement = null;
-let audioObjectUrl = null;
-const GAP_MS = 1000;      // pause between items
+let audioCtx = null;
+let audioSource = null;
+let nextTimer = null;
+let revealDetails = true;
+const GAP_MS = 800;              // pause between items
+const REVEAL_DING = true;        // play a "ding" before revealing word
+const REVEAL_DELAY_MS = 350;     // extra spacing between letter sound and word reveal
 
 // ===== SHUFFLE (Fisher-Yates) =====
 function shuffle(arr) {
@@ -168,18 +172,84 @@ function buildQueue() {
   paused = false;
 }
 
-// ===== AUDIO =====
-async function getAudioUrl(letter) {
-  const b64 = AUDIO_BASE64[letter];
-  if (!b64) return null;
-  try {
-    const raw = atob(b64);
-    const bytes = new Uint8Array(raw.length);
-    for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
-    return URL.createObjectURL(new Blob([bytes], { type: 'audio/mp3' }));
-  } catch (e) {
-    return null;
+// ===== AUDIO (Web Audio API for iOS continuous playback) =====
+const audioBufferCache = Object.create(null); // letter -> Promise<AudioBuffer>
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+async function unlockAudio() {
+  const ctx = getAudioCtx();
+  if (ctx.state === 'suspended') {
+    try { await ctx.resume(); } catch(e) {}
   }
+  // Warm up on iOS: a tiny silent buffer started from user gesture helps later playback.
+  try {
+    const buf = ctx.createBuffer(1, 1, ctx.sampleRate);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.start(0);
+  } catch(e) {}
+}
+
+function base64ToArrayBuffer(b64) {
+  const raw = atob(b64);
+  const bytes = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+  return bytes.buffer;
+}
+
+function getLetterBuffer(letter) {
+  if (audioBufferCache[letter]) return audioBufferCache[letter];
+  audioBufferCache[letter] = (async () => {
+    const b64 = AUDIO_BASE64[letter];
+    if (!b64) throw new Error('Missing audio for letter: ' + letter);
+    const ctx = getAudioCtx();
+    const arr = base64ToArrayBuffer(b64);
+    return await new Promise((resolve, reject) => {
+      // decodeAudioData uses callbacks on some WebKit versions
+      ctx.decodeAudioData(arr.slice(0), resolve, reject);
+    });
+  })();
+  return audioBufferCache[letter];
+}
+
+function playDing() {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = 1200;
+  gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.13);
+}
+
+function playLetter(letter) {
+  const ctx = getAudioCtx();
+  return getLetterBuffer(letter).then(buffer => new Promise((resolve) => {
+    // Stop previous source if any
+    if (audioSource) {
+      try { audioSource.onended = null; audioSource.stop(); } catch(e) {}
+      audioSource = null;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    src.connect(ctx.destination);
+    audioSource = src;
+    src.onended = () => {
+      if (audioSource === src) audioSource = null;
+      resolve();
+    };
+    try { src.start(0); } catch(e) { resolve(); }
+  }));
 }
 
 async function playItem(index) {
@@ -193,42 +263,44 @@ async function playItem(index) {
   }
   currentIdx = index;
   const item = VOCAB[queue[index]];
+  revealDetails = false;
   updateUI();
 
   stopAudio();
-  const url = await getAudioUrl(item.letter);
-  if (!url) {
-    if (isPlaying && !paused) setTimeout(() => playItem(index + 1), GAP_MS);
+  try {
+    await playLetter(item.letter);
+  } catch (e) {
+    // If audio can't play (common iOS policy), pause instead of fast-skipping items.
+    isPlaying = false;
+    paused = true;
+    revealDetails = true;
+    const btn = document.getElementById('btnPlay');
+    btn.textContent = '继续播放';
+    btn.className = 'btn btn-primary';
+    updateUI();
     return;
   }
-  audioObjectUrl = url;
-  audioElement = new Audio(audioObjectUrl);
-  audioElement.onended = () => {
-    stopAudio();
-    if (isPlaying && !paused) setTimeout(() => playItem(index + 1), GAP_MS);
-  };
-  audioElement.onerror = () => {
-    stopAudio();
-    if (isPlaying && !paused) setTimeout(() => playItem(index + 1), GAP_MS);
-  };
-  try {
-    await audioElement.play();
-  } catch (e) {
-    stopAudio();
-    if (isPlaying && !paused) setTimeout(() => playItem(index + 1), GAP_MS);
+
+  if (!isPlaying || paused) return;
+
+  if (REVEAL_DING) {
+    try { playDing(); } catch(e) {}
+  }
+  // Give a tiny buffer so letter/word feel separated
+  await new Promise(r => setTimeout(r, REVEAL_DELAY_MS));
+  revealDetails = true;
+  updateUI();
+
+  if (isPlaying && !paused) {
+    nextTimer = setTimeout(() => playItem(index + 1), GAP_MS);
   }
 }
 
 function stopAudio() {
-  if (audioElement) {
-    audioElement.pause();
-    audioElement.onended = null;
-    audioElement.onerror = null;
-    audioElement = null;
-  }
-  if (audioObjectUrl) {
-    try { URL.revokeObjectURL(audioObjectUrl); } catch(e) {}
-    audioObjectUrl = null;
+  if (nextTimer) { clearTimeout(nextTimer); nextTimer = null; }
+  if (audioSource) {
+    try { audioSource.onended = null; audioSource.stop(); } catch(e) {}
+    audioSource = null;
   }
 }
 
@@ -252,6 +324,7 @@ function togglePlay() {
     btn.className = 'btn btn-primary';
   } else if (paused) {
     // Resume
+    unlockAudio();
     paused = false;
     isPlaying = true;
     playItem(currentIdx >= 0 ? currentIdx : 0);
@@ -260,6 +333,7 @@ function togglePlay() {
   } else {
     // Start fresh
     if (currentIdx < 0) buildQueue();
+    unlockAudio();
     isPlaying = true;
     playItem(0);
     btn.textContent = '暂停';
@@ -282,6 +356,7 @@ function reshuffle() {
 
 function jumpTo(queueIdx) {
   stopAudio();
+  unlockAudio();
   isPlaying = true;
   paused = false;
   currentIdx = queueIdx - 1;
@@ -310,9 +385,15 @@ function updateUI() {
   if (currentIdx >= 0 && currentIdx < queue.length) {
     const item = VOCAB[queue[currentIdx]];
     letterBadge.textContent = item.letter;
-    wordDisplay.textContent = item.word;
-    sentenceDisplay.textContent = item.sentence;
-    cnDisplay.textContent = item.cn_sentence || '';
+    if (revealDetails) {
+      wordDisplay.textContent = item.word;
+      sentenceDisplay.textContent = item.sentence;
+      cnDisplay.textContent = item.cn_sentence || '';
+    } else {
+      wordDisplay.textContent = '…';
+      sentenceDisplay.textContent = '';
+      cnDisplay.textContent = '';
+    }
     letterBadge.classList.remove('pop');
     void letterBadge.offsetWidth;
     letterBadge.classList.add('pop');
