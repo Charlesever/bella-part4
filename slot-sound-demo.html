@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Part 4 老虎机音效试听（1/2/3/4）</title>
+  <style>
+    :root { --bg:#0b1220; --card:#121a2a; --text:#e5e7eb; --muted:#9ca3af; --blue:#60a5fa; --green:#34d399; --shadow:0 10px 30px rgba(0,0,0,.35); --r:16px; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; background:radial-gradient(1200px 800px at 20% 10%, #1b2a4a 0%, var(--bg) 55%); color:var(--text); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .wrap { width:min(920px, 100%); }
+    .card { background:rgba(18,26,42,.92); border:1px solid rgba(255,255,255,.08); border-radius:var(--r); box-shadow:var(--shadow); padding:22px; }
+    h1 { margin:0 0 6px; font-size:20px; }
+    p { margin:0 0 14px; color:var(--muted); line-height:1.5; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    button {
+      appearance:none; border:0; border-radius:999px; cursor:pointer;
+      padding:12px 16px; font-weight:800; letter-spacing:.3px;
+      background:#1f2b44; color:var(--text); border:1px solid rgba(255,255,255,.10);
+    }
+    button.primary { background:linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); border-color:rgba(96,165,250,.45); }
+    button.good { background:linear-gradient(180deg, #10b981 0%, #059669 100%); border-color:rgba(52,211,153,.45); }
+    button.small { padding:10px 14px; font-weight:700; }
+    button:active { transform:scale(.98); }
+    .pill { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); color:var(--muted); }
+    .num { width:26px; height:26px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:rgba(96,165,250,.18); color:#cfe5ff; font-weight:900; }
+    code { background:rgba(255,255,255,.06); padding:2px 6px; border-radius:8px; }
+    .grid { display:grid; grid-template-columns:1fr; gap:10px; margin-top:10px; }
+    @media (min-width:820px) { .grid { grid-template-columns: 1fr 1fr 1fr 1fr; } }
+    .opt { padding:14px; border-radius:14px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); }
+    .opt h3 { margin:0 0 6px; font-size:14px; color:#dbeafe; }
+    .opt p { margin:0 0 10px; font-size:12px; }
+    .footer { margin-top:14px; color:var(--muted); font-size:12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Part 4 老虎机滚动音效 · 试听 1 / 2 / 3 / 4</h1>
+      <p>先点一次 <code>开始音频</code>（解锁浏览器音频），再点各方案的 <code>试听</code>。你觉得好听的编号发我，我再把那一套固定到 Part4 里并推送。</p>
+
+      <div class="row" style="margin-bottom:10px;">
+        <button class="primary" onclick="unlockAudio()">开始音频</button>
+        <span class="pill"><span class="num" id="stateDot">…</span><span id="stateText">未解锁</span></span>
+        <button class="small" onclick="preview(1)">快速试听(1)</button>
+        <button class="small" onclick="preview(2)">快速试听(2)</button>
+        <button class="small" onclick="preview(3)">快速试听(3)</button>
+        <button class="small" onclick="preview(4)">快速试听(4)</button>
+      </div>
+
+      <div class="grid">
+        <div class="opt">
+          <h3>方案 1：Arcade Click</h3>
+          <p>明亮清脆，偏“游戏机按钮”。</p>
+          <div class="row">
+            <button class="good" onclick="preview(1)">试听 1</button>
+            <button onclick="single(1, 50)">快</button>
+            <button onclick="single(1, 12)">慢</button>
+          </div>
+        </div>
+        <div class="opt">
+          <h3>方案 2：Soft Mechanical Tick</h3>
+          <p>更柔和，偏“机械滚轮咔嗒”。</p>
+          <div class="row">
+            <button class="good" onclick="preview(2)">试听 2</button>
+            <button onclick="single(2, 50)">快</button>
+            <button onclick="single(2, 12)">慢</button>
+          </div>
+        </div>
+        <div class="opt">
+          <h3>方案 3：Woody Clack</h3>
+          <p>偏温暖的“木块碰撞”。</p>
+          <div class="row">
+            <button class="good" onclick="preview(3)">试听 3</button>
+            <button onclick="single(3, 50)">快</button>
+            <button onclick="single(3, 12)">慢</button>
+          </div>
+        </div>
+        <div class="opt">
+          <h3>方案 4：Realistic Click</h3>
+          <p>更“像实景”的机械咔嗒（噪声瞬态 + 共振 + 压缩）。</p>
+          <div class="row">
+            <button class="good" onclick="preview(4)">试听 4</button>
+            <button onclick="single(4, 50)">快</button>
+            <button onclick="single(4, 12)">慢</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">提示：如果第一次没声音，再点一次“开始音频”，然后再试听。</div>
+    </div>
+  </div>
+
+  <script>
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    }
+    function setState(ok) {
+      const dot = document.getElementById('stateDot');
+      const txt = document.getElementById('stateText');
+      if (ok) { dot.textContent = 'OK'; dot.style.background = 'rgba(52,211,153,.18)'; dot.style.color = '#bfffea'; txt.textContent = '已解锁'; }
+      else { dot.textContent = '…'; dot.style.background = 'rgba(96,165,250,.18)'; dot.style.color = '#cfe5ff'; txt.textContent = '未解锁'; }
+    }
+
+    async function unlockAudio() {
+      try {
+        const ctx = getAudioCtx();
+        if (ctx.state === 'suspended') await ctx.resume();
+        const buf = ctx.createBuffer(1, 1, ctx.sampleRate);
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        src.connect(ctx.destination);
+        src.start(0);
+        setState(true);
+      } catch (e) {
+        setState(false);
+      }
+    }
+
+    function playStyle(style, speed) {
+      const s = Math.max(2, Math.min(60, speed || 10));
+      const ctx = getAudioCtx();
+      const t0 = ctx.currentTime;
+
+      if (style === 1) {
+        const freq = 520 + s * 11;
+        const dur = 0.02 + Math.max(0, (40 - s)) * 0.0005;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, t0);
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.18, t0 + 0.004);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t0);
+        osc.stop(t0 + dur + 0.01);
+        return;
+      }
+
+      if (style === 2) {
+        const dur = 0.015 + Math.max(0, (45 - s)) * 0.0004;
+        const bufferLen = Math.max(1, Math.floor(ctx.sampleRate * dur));
+        const noise = ctx.createBuffer(1, bufferLen, ctx.sampleRate);
+        const data = noise.getChannelData(0);
+        for (let i = 0; i < bufferLen; i++) data[i] = (Math.random() * 2 - 1) * 0.7;
+        const src = ctx.createBufferSource();
+        src.buffer = noise;
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1600 + s * 10, t0);
+        filter.Q.setValueAtTime(8, t0);
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.22, t0 + 0.002);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        src.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        src.start(t0);
+        src.stop(t0 + dur + 0.01);
+        return;
+      }
+
+      if (style === 3) {
+        const base = 420 + s * 6;
+        const dur = 0.02 + Math.max(0, (35 - s)) * 0.0006;
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc1.type = 'sine';
+        osc2.type = 'sine';
+        osc1.frequency.setValueAtTime(base, t0);
+        osc2.frequency.setValueAtTime(base * 2.15, t0);
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.22, t0 + 0.003);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(ctx.destination);
+        osc1.start(t0);
+        osc2.start(t0);
+        osc1.stop(t0 + dur + 0.01);
+        osc2.stop(t0 + dur + 0.01);
+        return;
+      }
+
+      // style 4: realistic mechanical click
+      const dur = 0.018 + Math.max(0, (45 - s)) * 0.00045;
+      const bufferLen = Math.max(1, Math.floor(ctx.sampleRate * dur));
+      const noise = ctx.createBuffer(1, bufferLen, ctx.sampleRate);
+      const data = noise.getChannelData(0);
+      for (let i = 0; i < bufferLen; i++) {
+        const x = i / bufferLen;
+        const env = Math.exp(-x * 10.0);
+        data[i] = (Math.random() * 2 - 1) * env * 0.9;
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = noise;
+
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.setValueAtTime(350, t0);
+      hp.Q.setValueAtTime(0.7, t0);
+
+      const bp1 = ctx.createBiquadFilter();
+      bp1.type = 'bandpass';
+      bp1.frequency.setValueAtTime(1400 + s * 8, t0);
+      bp1.Q.setValueAtTime(10, t0);
+
+      const bp2 = ctx.createBiquadFilter();
+      bp2.type = 'bandpass';
+      bp2.frequency.setValueAtTime(2600 + s * 10, t0);
+      bp2.Q.setValueAtTime(6, t0);
+
+      const mix = ctx.createGain();
+      mix.gain.setValueAtTime(1.0, t0);
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.28, t0 + 0.0025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+
+      const comp = ctx.createDynamicsCompressor();
+      comp.threshold.setValueAtTime(-18, t0);
+      comp.knee.setValueAtTime(20, t0);
+      comp.ratio.setValueAtTime(6, t0);
+      comp.attack.setValueAtTime(0.001, t0);
+      comp.release.setValueAtTime(0.08, t0);
+
+      src.connect(hp);
+      hp.connect(bp1);
+      hp.connect(bp2);
+      bp1.connect(mix);
+      bp2.connect(mix);
+      mix.connect(gain);
+      gain.connect(comp);
+      comp.connect(ctx.destination);
+
+      src.start(t0);
+      src.stop(t0 + dur + 0.02);
+    }
+
+    function preview(style) {
+      unlockAudio();
+      const speeds = [50, 42, 34, 26, 18, 12, 8, 5, 3];
+      speeds.forEach((sp, i) => setTimeout(() => playStyle(style, sp), i * 110));
+    }
+    function single(style, speed) {
+      unlockAudio();
+      playStyle(style, speed);
+    }
+
+    setState(false);
+  </script>
+</body>
+</html>

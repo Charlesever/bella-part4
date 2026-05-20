@@ -719,10 +719,23 @@ function stopAllAudio() {
 // COUNTDOWN SOUND EFFECTS (Web Audio API)
 // ============================
 let audioCtx = null;
+let slotClickBufferPromise = null;
 
 function getAudioCtx() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   return audioCtx;
+}
+
+function ensureSlotClickLoaded() {
+  if (slotClickBufferPromise) return slotClickBufferPromise;
+  const ctx = getAudioCtx();
+  slotClickBufferPromise = fetch('assets/slot-click.mp3', { cache: 'force-cache' })
+    .then(r => r.arrayBuffer())
+    .then(buf => new Promise((resolve, reject) => {
+      ctx.decodeAudioData(buf.slice(0), resolve, reject);
+    }))
+    .catch(() => null);
+  return slotClickBufferPromise;
 }
 
 function playBeep(freq, duration, type) {
@@ -749,24 +762,44 @@ function playDing() {
 }
 
 function playSlotClick(speed) {
-  // Speed-sensitive "click" to mimic a slot machine reel.
-  // Higher speed => slightly higher pitch and louder.
+  // Speed-sensitive "click" using an MP3 sample (more realistic).
+  // We ignore the sample's full duration and only play a short slice.
   const s = Math.max(2, Math.min(60, speed || 10));
-  const freq = 650 + s * 14;
-  const dur = 0.025 + Math.max(0, (35 - s)) * 0.0006;
   try {
     const ctx = getAudioCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'square';
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.22, ctx.currentTime + 0.003);
-    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + dur + 0.005);
+    const t0 = ctx.currentTime;
+
+    const fallback = () => {
+      const freq = 520 + s * 11;
+      const dur = 0.02 + Math.max(0, (40 - s)) * 0.0005;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, t0);
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.18, t0 + 0.004);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + dur + 0.01);
+    };
+
+    if (!slotClickBufferPromise) return fallback();
+    slotClickBufferPromise.then(buffer => {
+      if (!buffer) return fallback();
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+      src.playbackRate.setValueAtTime(0.92 + (s / 60) * 0.20, t0);
+      const gain = ctx.createGain();
+      const slice = 0.075;
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.38, t0 + 0.003);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + slice);
+      src.connect(gain);
+      gain.connect(ctx.destination);
+      try { src.start(t0, 0, slice); } catch (e) { fallback(); }
+    });
   } catch (e) {}
 }
 
@@ -992,6 +1025,7 @@ function spinLottery() {
     // Start loading embedded audio early (don't await).
     if (!window.AUDIO_BASE64) ensureAudioBase64Loaded();
   } catch(e) {}
+  try { ensureSlotClickLoaded(); } catch(e) {}
   try {
     const ctx = getAudioCtx();
     if (ctx && ctx.state === 'suspended') ctx.resume().catch(()=>{});
