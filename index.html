@@ -40,6 +40,25 @@
   .progress-bar-fill { height:100%; background:var(--green); border-radius:3px; transition:width .3s; }
 
   .main { max-width:700px; margin:0 auto; padding:24px 16px 100px; }
+  .cta-dock { display:flex; justify-content:center; width:100%; }
+
+  @media (max-width:600px) {
+    /* Keep the primary action in a consistent thumb-friendly spot */
+    .cta-dock {
+      position:fixed;
+      left:0; right:0; bottom:0;
+      padding:12px 16px calc(14px + env(safe-area-inset-bottom));
+      justify-content:center;
+      z-index:120;
+      pointer-events:none;
+      background: linear-gradient(to top, rgba(240,244,248,.98) 0%, rgba(240,244,248,.90) 60%, rgba(240,244,248,0) 100%);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+    .cta-dock > * { pointer-events:auto; }
+    .cta-dock .btn { width:100%; max-width:520px; }
+    .cta-dock .btn-play { width:84px; height:84px; max-width:none; }
+  }
 
   /* ===== Stage containers ===== */
   .stage { display:flex; flex-direction:column; align-items:center; gap:20px; padding:20px 0; }
@@ -282,7 +301,9 @@
         <div class="slot-track" id="slotTrack"></div>
       </div>
     </div>
-    <button class="btn btn-primary btn-lg" id="btnSpin" onclick="spinLottery()">抽题</button>
+    <div class="cta-dock">
+      <button class="btn btn-primary btn-lg" id="btnSpin" onclick="spinLottery()">抽题</button>
+    </div>
   </div>
 
   <!-- ========== PLAY BUTTON ONLY (no question text visible) ========== -->
@@ -292,7 +313,9 @@
       <p style="font-size:1.3em;color:var(--text);">准备好了吗？</p>
       <p style="color:var(--text-light);font-size:.9em;">点击下方按钮，认真听题</p>
     </div>
-    <button class="btn btn-play" id="btnPlay" onclick="playAudio()">▶</button>
+    <div class="cta-dock">
+      <button class="btn btn-play" id="btnPlay" onclick="playAudio()">▶</button>
+    </div>
     <p style="color:var(--text-light);font-size:.85em;">点击播放，听评委提问</p>
   </div>
 
@@ -324,7 +347,9 @@
       <p style="font-size:1.5em;font-weight:700;color:var(--green);margin-bottom:8px;">请大声作答！</p>
       <p style="color:var(--text-light);">大声说出你的回答，评委在认真听</p>
     </div>
-    <button class="btn btn-primary btn-lg" onclick="finishAnswering()">回答完毕</button>
+    <div class="cta-dock">
+      <button class="btn btn-primary btn-lg" onclick="finishAnswering()">回答完毕</button>
+    </div>
   </div>
 
   <!-- ========== ANSWER REVEAL (step by step) ========== -->
@@ -351,36 +376,34 @@
     </div>
 
     <!-- Step control buttons -->
-    <button class="btn btn-reveal" id="btnRevealQuestion" onclick="revealQuestionText()">
-      显示题目
-    </button>
-    <button class="btn btn-reveal hidden" id="btnRevealTemplate" onclick="revealTemplateText()">
-      显示参考答案
-    </button>
-    <button class="btn btn-primary hidden" id="btnGoScore" onclick="showScoring()">
-      去打分
-    </button>
+    <div class="cta-dock">
+      <button class="btn btn-reveal" id="btnRevealQuestion" onclick="revealQuestionText()">显示题目</button>
+      <button class="btn btn-reveal hidden" id="btnRevealTemplate" onclick="revealTemplateText()">显示参考答案</button>
+      <button class="btn btn-primary hidden" id="btnGoScore" onclick="showScoring()">去打分</button>
+    </div>
   </div>
 
   <!-- ========== SCORING (always in HTML) ========== -->
   <div id="stageScoring" class="stage hidden">
     <div style="font-size:1.1em;color:var(--text-light);">给自己打个分吧</div>
-    <div class="score-btns">
-      <button class="btn-score" onclick="scoreQuestion(0)">
-        <span class="score-emoji">😞</span>
-        <span class="score-label">完全不会</span>
-        <span class="score-points">0 分</span>
-      </button>
-      <button class="btn-score" onclick="scoreQuestion(1)">
-        <span class="score-emoji">🤔</span>
-        <span class="score-label">答出不准确</span>
-        <span class="score-points">1 分</span>
-      </button>
-      <button class="btn-score" onclick="scoreQuestion(2)">
-        <span class="score-emoji">😎</span>
-        <span class="score-label">自信且正确</span>
-        <span class="score-points">2 分</span>
-      </button>
+    <div class="cta-dock">
+      <div class="score-btns">
+        <button class="btn-score" onclick="scoreQuestion(0)">
+          <span class="score-emoji">😞</span>
+          <span class="score-label">完全不会</span>
+          <span class="score-points">0 分</span>
+        </button>
+        <button class="btn-score" onclick="scoreQuestion(1)">
+          <span class="score-emoji">🤔</span>
+          <span class="score-label">答出不准确</span>
+          <span class="score-points">1 分</span>
+        </button>
+        <button class="btn-score" onclick="scoreQuestion(2)">
+          <span class="score-emoji">😎</span>
+          <span class="score-label">自信且正确</span>
+          <span class="score-points">2 分</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -395,7 +418,9 @@
       <p style="color:var(--text-light);margin-top:8px;" id="resultsMsg"></p>
     </div>
     <div id="resultsReview" style="width:100%;text-align:left;font-size:.85em;"></div>
-    <button class="btn btn-primary btn-lg" onclick="startSession()">再来一轮</button>
+    <div class="cta-dock">
+      <button class="btn btn-primary btn-lg" onclick="startSession()">再来一轮</button>
+    </div>
   </div>
 
 </main>
@@ -723,6 +748,28 @@ function playDing() {
   setTimeout(() => playBeep(1600, 0.15, 'sine'), 50);
 }
 
+function playSlotClick(speed) {
+  // Speed-sensitive "click" to mimic a slot machine reel.
+  // Higher speed => slightly higher pitch and louder.
+  const s = Math.max(2, Math.min(60, speed || 10));
+  const freq = 650 + s * 14;
+  const dur = 0.025 + Math.max(0, (35 - s)) * 0.0006;
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.22, ctx.currentTime + 0.003);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + dur + 0.005);
+  } catch (e) {}
+}
+
 // ============================
 // COUNTDOWN
 // ============================
@@ -975,8 +1022,10 @@ function spinLottery() {
   const totalDistance = targetOffset;
   const acceleratePhase = totalDistance * 0.7;
   const deceleratePhase = totalDistance * 0.3;
+  let lastStep = 0;
 
   function animate() {
+    const prevOffset = currentOffset;
     if (currentOffset < acceleratePhase) {
       speed = Math.min(speed * 1.02, 50);
     } else if (currentOffset < totalDistance) {
@@ -992,6 +1041,12 @@ function spinLottery() {
       return;
     }
     currentOffset += speed;
+    // Tick sound per "row" crossed (cap to 1 tick per frame).
+    const step = Math.floor(currentOffset / itemHeight);
+    if (step > lastStep) {
+      lastStep = step;
+      playSlotClick(speed);
+    }
     slotTrack.style.transform = `translateY(-${currentOffset}px)`;
     lotteryAnimFrame = requestAnimationFrame(animate);
   }
