@@ -148,6 +148,7 @@ let currentIdx = -1;      // position within queue
 let isPlaying = false;
 let paused = false;
 let audioElement = null;
+let audioObjectUrl = null;
 const GAP_MS = 1000;      // pause between items
 
 // ===== SHUFFLE (Fisher-Yates) =====
@@ -172,10 +173,10 @@ async function getAudioUrl(letter) {
   const b64 = AUDIO_BASE64[letter];
   if (!b64) return null;
   try {
-    const dataUri = 'data:audio/mp3;base64,' + b64;
-    const resp = await fetch(dataUri);
-    const blob = await resp.blob();
-    return URL.createObjectURL(blob);
+    const raw = atob(b64);
+    const bytes = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+    return URL.createObjectURL(new Blob([bytes], { type: 'audio/mp3' }));
   } catch (e) {
     return null;
   }
@@ -200,22 +201,20 @@ async function playItem(index) {
     if (isPlaying && !paused) setTimeout(() => playItem(index + 1), GAP_MS);
     return;
   }
-  audioElement = new Audio(url);
+  audioObjectUrl = url;
+  audioElement = new Audio(audioObjectUrl);
   audioElement.onended = () => {
-    URL.revokeObjectURL(url);
-    audioElement = null;
+    stopAudio();
     if (isPlaying && !paused) setTimeout(() => playItem(index + 1), GAP_MS);
   };
   audioElement.onerror = () => {
-    URL.revokeObjectURL(url);
-    audioElement = null;
+    stopAudio();
     if (isPlaying && !paused) setTimeout(() => playItem(index + 1), GAP_MS);
   };
   try {
     await audioElement.play();
   } catch (e) {
-    URL.revokeObjectURL(url);
-    audioElement = null;
+    stopAudio();
     if (isPlaying && !paused) setTimeout(() => playItem(index + 1), GAP_MS);
   }
 }
@@ -223,7 +222,13 @@ async function playItem(index) {
 function stopAudio() {
   if (audioElement) {
     audioElement.pause();
+    audioElement.onended = null;
+    audioElement.onerror = null;
     audioElement = null;
+  }
+  if (audioObjectUrl) {
+    try { URL.revokeObjectURL(audioObjectUrl); } catch(e) {}
+    audioObjectUrl = null;
   }
 }
 
