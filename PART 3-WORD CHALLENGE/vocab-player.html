@@ -225,14 +225,17 @@ const GAP_WORD_SENT = 1000;   // ear-training: gap between word and sentence (ms
 const GAP_SENT_NEXT = 400;    // training: gap between sentence and next auto-advance
 
 // ===== AUDIO HELPERS =====
-async function getAudioUrl(base64Map, letter) {
+// Use atob() + Blob — avoid fetch(data:...) which is unreliable on mobile Safari.
+// Reuse a single Audio element — creating new Audio() away from user gesture
+// triggers iOS autoplay block.
+function getAudioUrl(base64Map, letter) {
   const b64 = base64Map[letter];
   if (!b64) return null;
   try {
-    const dataUri = 'data:audio/mp3;base64,' + b64;
-    const resp = await fetch(dataUri);
-    const blob = await resp.blob();
-    return URL.createObjectURL(blob);
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return URL.createObjectURL(new Blob([bytes], { type: 'audio/mp3' }));
   } catch (e) {
     return null;
   }
@@ -241,7 +244,7 @@ async function getAudioUrl(base64Map, letter) {
 function stopAudio() {
   if (activeAudio) {
     activeAudio.pause();
-    activeAudio = null;
+    // Don't null activeAudio — we reuse the element
   }
   if (audioAbort) {
     audioAbort();
@@ -253,6 +256,16 @@ function playAudio(url) {
   return new Promise((resolve) => {
     if (!url) { resolve(); return; }
     stopAudio();
+
+    // Reuse a single Audio element to stay within iOS Safari's autoplay grant
+    if (!activeAudio) {
+      activeAudio = new Audio();
+    }
+    // Revoke previous blob URL if any
+    if (activeAudio.src && activeAudio.src.startsWith('blob:')) {
+      URL.revokeObjectURL(activeAudio.src);
+    }
+
     let resolved = false;
     const done = () => {
       if (!resolved) {
@@ -262,38 +275,28 @@ function playAudio(url) {
       }
     };
     audioAbort = done;
-    activeAudio = new Audio(url);
-    activeAudio.onended = () => {
-      URL.revokeObjectURL(url);
-      activeAudio = null;
-      done();
-    };
-    activeAudio.onerror = () => {
-      URL.revokeObjectURL(url);
-      activeAudio = null;
-      done();
-    };
-    activeAudio.play().catch(() => {
-      URL.revokeObjectURL(url);
-      activeAudio = null;
-      done();
-    });
+
+    activeAudio.onended = done;
+    activeAudio.onerror = done;
+    activeAudio.src = url;
+    activeAudio.load();
+    activeAudio.play().catch(done);
   });
 }
 
-async function playLetterAudio(letter) {
-  const url = await getAudioUrl(LETTER_AUDIO, letter);
-  await playAudio(url);
+function playLetterAudio(letter) {
+  const url = getAudioUrl(LETTER_AUDIO, letter);
+  return playAudio(url);
 }
 
-async function playWordAudio(letter) {
-  const url = await getAudioUrl(WORD_AUDIO, letter);
-  await playAudio(url);
+function playWordAudio(letter) {
+  const url = getAudioUrl(WORD_AUDIO, letter);
+  return playAudio(url);
 }
 
-async function playSentAudio(letter) {
-  const url = await getAudioUrl(SENT_AUDIO, letter);
-  await playAudio(url);
+function playSentAudio(letter) {
+  const url = getAudioUrl(SENT_AUDIO, letter);
+  return playAudio(url);
 }
 
 // ===== REVEAL SOUND (Web Audio API: C5->E5->G5->C6 arpeggio) =====
